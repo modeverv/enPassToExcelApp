@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
+application {
+    mainClass = 'org.example.Main'
+}
+
+shadowJar {
+    archiveBaseName.set('MyApp')
+    archiveVersion.set('1.0.0')
+    archiveClassifier.set('')
+}
+
+task jpackage(type: Exec) {
+    dependsOn shadowJar
+    def jpackageExecutable = "${System.getProperty('java.home')}/bin/jpackage"
+    commandLine jpackageExecutable,
+            '--input', "${buildDir}/libs",
+            '--main-jar', "MyApp-1.0.0.jar",
+            '--main-class', 'org.example.Main',
+            '--name', 'MyApp',
+            '--type', 'dmg',
+            '--dest', "${buildDir}/jpackage"
+}
+
+group = 'org.example'
+version = '1.0.0' // jpackage用に1.0.0に統一
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation('org.apache.poi:poi-ooxml:5.4.1') {
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-api'
+        exclude group: 'org.apache.logging.log4j', module: 'log4j-core'
+    }
+    implementation 'org.apache.poi:poi:5.4.1'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+
